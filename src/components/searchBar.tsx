@@ -47,19 +47,17 @@ const SearchBar: React.FC<SearchBarProps> = ({ data, setBotReply, barLoading }) 
     const fetchSuggestions = async () => {
         setSuggestionsLoading(true); // Start skeleton loading
         try {
-            const requestBody = [ data ];
             const response = await fetch('https://assist-pc-backend-dev.onrender.com/followup-questions', {
-                method: 'POST',
+                method: 'GET', // Use GET method
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify(requestBody),
             });
-
+            console.log('Response:', response);
             if (!response.ok) {
                 throw new Error('Failed to fetch suggestions');
             }
-
+    
             const result = await response.json();
             if (Array.isArray(result)) {
                 setSuggestions(result);
@@ -95,6 +93,7 @@ const SearchBar: React.FC<SearchBarProps> = ({ data, setBotReply, barLoading }) 
 
         try {
             const requestBody = [data, searchTerm.trim()];
+            console.log('Request Body: pathwaypathwaypathway', requestBody);
             const response = await fetch('https://assist-pc-backend-dev.onrender.com/ask-pathway-streamed', {
                 method: 'POST',
                 headers: {

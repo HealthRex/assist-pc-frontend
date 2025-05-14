@@ -24,7 +24,37 @@ import EditNoteRoundedIcon from "@mui/icons-material/EditNoteRounded";
 
 interface ApiResponse {
   specialistSummary: string;
-  populatedTemplate: Array<{ field: string; value: string }>;
+  populatedTemplate: Array<{
+    assessments: {
+      required: Array<{
+        question: string;
+        answer: string;
+        reasoning: string;
+        citations_from_record: string[];
+      }>;
+      optional: Array<{
+        question: string;
+        answer: string;
+        reasoning: string;
+        citations_from_record: string[];
+      }>;
+    };
+    diagnostics: {
+      required: Array<{
+        question: string;
+        answer: string;
+        reasoning: string;
+        citations_from_record: string[];
+      }>;
+      optional: Array<{
+        question: string;
+        answer: string;
+        reasoning: string;
+        citations_from_record: string[];
+      }>;
+    };
+  }>;
+  templateSelectionProcess: string;
   specialistAIResponse: {
     summaryResponse: string;
     citations: Array<{ name: string; url: string }>;
@@ -56,8 +86,37 @@ const ConsultPage: React.FC<ConsultPageProps> = ({
   const [showPhase2, setShowPhase2] = useState<boolean>(false);
   const [showPhase3, setShowPhase3] = useState<boolean>(false);
   const [displayedTemplate, setDisplayedTemplate] = useState<
-    Array<{ field: string; value: string }>
-  >([]);
+  Array<{
+    assessments: {
+      required: Array<{
+        question: string;
+        answer: string;
+        reasoning: string;
+        citations_from_record: string[];
+      }>;
+      optional: Array<{
+        question: string;
+        answer: string;
+        reasoning: string;
+        citations_from_record: string[];
+      }>;
+    };
+    diagnostics: {
+      required: Array<{
+        question: string;
+        answer: string;
+        reasoning: string;
+        citations_from_record: string[];
+      }>;
+      optional: Array<{
+        question: string;
+        answer: string;
+        reasoning: string;
+        citations_from_record: string[];
+      }>;
+    };
+  }>
+>([]);
   const [typedText, setTypedText] = useState<string>("");
   const [wordIndex, setWordIndex] = useState(0);
   const [citationIndex, setCitationIndex] = useState(0);
@@ -331,15 +390,13 @@ const ConsultPage: React.FC<ConsultPageProps> = ({
         }}
       >
         <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
-          {response ? (
-            <>
-              <Typography variant="h6" sx={{ mb: 1, fontWeight: "bold" }}>
+        <Typography variant="h6" sx={{ mb: 1, fontWeight: "bold" }}>
                 Auto-populated Data
               </Typography>
               <Paper
                 elevation={3}
                 sx={{
-                  p: 1,
+                  p: 2,
                   height: "593px",
                   overflow: "hidden",
                   overflowY: "auto",
@@ -347,84 +404,77 @@ const ConsultPage: React.FC<ConsultPageProps> = ({
                   scrollbarWidth: "thin",
                 }}
               >
+          {response?.populatedTemplate.length != 0 ? (
+            <>
                 <List>
-                  {displayedTemplate.map((item, index) => (
-                    <React.Fragment key={index}>
-                      <ListItem
-                        sx={{
-                          display: "flex",
-                          flexDirection: "column",
-                          alignItems: "flex-start",
-                          opacity: 0,
-                          transform: "translateY(10px)",
-                          animation: `fadeIn 0.5s ease-in ${
-                            index * 0.2
-                          }s forwards`,
-                          "@keyframes fadeIn": {
-                            from: { opacity: 0, transform: "translateY(10px)" },
-                            to: { opacity: 1, transform: "translateY(0)" },
-                          },
-                        }}
-                      >
-                        <Typography
-                          variant="subtitle1"
-                          sx={{ fontWeight: "bold" }}
-                        >
-                          {item.field}:
-                        </Typography>
-                        {typeof item.value === "string" &&
-                        item.value.includes("\n") ? (
-                          <ReactMarkdown
-                            components={{
-                              div: ({ children }) => (
-                                <Box
-                                  component="p"
-                                  sx={{
-                                    pl: 2,
-                                    color: "grey.700",
-                                    paddingLeft: 0,
-                                    display: "flex",
-                                    flexDirection: "column",
-                                    listStyleType: "none",
-                                    gap: "0.5rem",
-                                  }}
-                                >
-                                  {children}
-                                </Box>
-                              ),
-                              p: ({ children }) => (
-                                <Typography component="span" variant="body2">
-                                  {children}
-                                </Typography>
-                              ),
-                            }}
-                          >
-                            {item.value}
-                          </ReactMarkdown>
-                        ) : (
-                          <ReactMarkdown
-                            components={{
-                              p: ({ children }) => (
-                                <Typography
-                                  variant="body2"
-                                  sx={{ color: "grey.800" }}
-                                >
-                                  {children}
-                                </Typography>
-                              ),
-                            }}
-                          >
-                            {item.value || "N/A"}
-                          </ReactMarkdown>
-                        )}
-                      </ListItem>
-                      {index < displayedTemplate.length - 1 && (
-                        <Divider sx={{ mb: 1, mt: 2 }} />
-                      )}{" "}
-                    </React.Fragment>
-                  ))}
-                </List>
-              </Paper>
+  {
+    displayedTemplate.map((template, templateIndex) => (
+      <React.Fragment key={templateIndex}>
+        {(["required", "optional"] as Array<"required" | "optional">).map((type) => (
+            <React.Fragment key={type}>
+            {template.assessments[type as "required" | "optional"].map(
+              (assessment: {
+              question: string;
+              answer: string;
+              reasoning: string;
+              citations_from_record: string[];
+              }, index: number) => (
+              <React.Fragment key={index}>
+              <ListItem
+              sx={{
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "flex-start",
+              mb: 2,
+              p:0
+              }}
+            >
+              <Typography variant="body2" sx={{ fontWeight: "bold", mb: 1 }}>
+                Q: {assessment.question}
+              </Typography>
+              <Typography variant="body2">{assessment.answer}</Typography>
+              <Typography variant="body2" sx={{ fontWeight: "bold", mt: 1 }}>
+              Reasoning:
+              </Typography>
+              <Typography variant="body2">{assessment.reasoning}</Typography>
+            </ListItem>
+            <Divider sx={{ my: 2, width:"100%" }} />
+            </React.Fragment>
+              )
+            )}
+            </React.Fragment>
+        ))}
+        {(["required", "optional"] as Array<"required" | "optional">).map((type) => (
+          <React.Fragment key={type}>
+            {template.diagnostics[type].map((diagnostic: { question: string; answer: string; reasoning: string; citations_from_record: string[] }, index: number) => (
+              <React.Fragment key={index}>
+              <ListItem
+                sx={{
+                  display: "flex",
+                  flexDirection: "column",
+                  alignItems: "flex-start",
+                  mb: 2,
+                  p:0
+                }}
+              >
+                <Typography variant="body2" sx={{ fontWeight: "bold", mb: 1 }}>
+                Q: {diagnostic.question}
+              </Typography>
+                <Typography variant="body2">{diagnostic.answer}</Typography>
+                <Typography variant="body2" sx={{ fontWeight: "bold", mt: 1 }}>
+                  Reasoning:
+                </Typography>
+                <Typography variant="body2">{diagnostic.reasoning}</Typography>
+              </ListItem>
+              <Divider sx={{ my: 2 }} />
+              </React.Fragment>
+            ))}
+          </React.Fragment>
+        ))}
+      </React.Fragment>
+    ))}
+</List>
+              
             </>
           ) : (
             <>
@@ -460,6 +510,7 @@ const ConsultPage: React.FC<ConsultPageProps> = ({
               ))}
             </>
           )}
+          </Paper>
         </Box>
       </Box>
       {/* Right Side (AI-Generated Response) */}
